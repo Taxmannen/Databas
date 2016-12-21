@@ -26,6 +26,8 @@ public class GUI extends JFrame  {
 	private Font myFont = new Font ("Helvetica", 1, 20);
 	private ImageIcon icon = new ImageIcon("assets/Book.png");
 	
+	/*The constructor
+	 */
 	public GUI() {
 		setSize(1030, 760);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -41,6 +43,8 @@ public class GUI extends JFrame  {
 		setVisible(true);
 	}
 	
+	/* Adds the components to the screen. 
+	 */
 	private void add_components() {
 		addText();
 		
@@ -186,6 +190,8 @@ public class GUI extends JFrame  {
 		add(searchField);
 	}
 	
+	/*Adds the text to the screen
+	 */
 	private void addText() {
 		JLabel searchText = new JLabel("Search");
 		searchText.setFont(myFont);

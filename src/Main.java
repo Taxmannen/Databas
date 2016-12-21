@@ -3,6 +3,9 @@ public class Main {
 	
 	public static Connection connection;
 	public static Statement statement;
+	
+	/*Open a connection to the database and creates the gui.
+	 */
 	public static void main(String[] args) {
 		try {
 			connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/books", "user" , "password");
