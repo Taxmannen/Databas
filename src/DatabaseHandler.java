@@ -3,6 +3,8 @@ import java.util.ArrayList;
 
 public class DatabaseHandler {
 	
+	/*Updates the list that holds the data.
+	 */
 	public void updateList() {
 		try {
 			ResultSet result  = Main.statement.executeQuery("SELECT * FROM books");
@@ -16,6 +18,12 @@ public class DatabaseHandler {
 		}
 	}
 	
+	/* Adds a new book to the database.
+	 * @param name - the name of the book,.
+	 * @param genre - the genre of the book.
+	 * @param author - the author of the book.
+	 * @param serienr - the serienr of the book.
+	 */
 	public boolean addToDatabase(String name, String genre, String author, String serienr) {
 		try {
 			ResultSet result = Main.statement.executeQuery("SELECT serienr FROM books WHERE serienr = '"+serienr+"'");
@@ -30,6 +38,13 @@ public class DatabaseHandler {
 		return false;
 	}
 	
+	/* Edits a book that already exists in the database.
+	 * @param oldName - the name before the edit.
+	 * @param name - the name of the book.
+	 * @param genre - the genre of the book.
+	 * @param author - the author of the book.
+	 * @param serienr - the serienr of the book.
+	 */
 	public void editFromDatabase(String oldName, String name, String genre, String author, String serienr) {
 		try {
 			Main.statement.executeUpdate("UPDATE books SET name='"+name+"', genre= '"+genre+"', author='"+author+"', serienr='"+serienr+"' where name = '"+oldName+"'");
@@ -38,6 +53,9 @@ public class DatabaseHandler {
 		}
 	}
 	
+	/* Deletes a current book from the database.
+	 * @param serienr - the serienumber of the book you are trying to delete.
+	 */
 	public void deleteFromDatabase(int serienr) {
 		try {
 			Main.statement.executeUpdate("DELETE FROM books WHERE serienr = '"+serienr+"'");
@@ -46,6 +64,9 @@ public class DatabaseHandler {
 		}
 	}
 	
+	/* Sorts the library in the way you picked.
+	 * @param type - the type that you are trying to sort.
+	 */
 	public void sortDatabase(String type) {
 		try {
 			ResultSet result = Main.statement.executeQuery("SELECT * FROM books ORDER BY "+type+"");
@@ -58,6 +79,9 @@ public class DatabaseHandler {
 		}
 	}
 	
+	/* Shows the genre you picked.
+	 * @param type - the type that you are trying to show.
+	 */
 	public void showGenre(String type) {
 		try {
 			ResultSet result = Main.statement.executeQuery("SELECT * FROM books WHERE genre = '"+type+"'");
@@ -70,6 +94,9 @@ public class DatabaseHandler {
 		}
 	}
 	
+	/* Show the books you are searching for.
+	 * @param querty - the thing you searched for. 
+	 */
 	public void searchDatabase(String query) {
 		try {
 			ResultSet result = Main.statement.executeQuery("SELECT * FROM books WHERE name LIKE '%" + query + "%' OR genre LIKE '%" + query + "%' OR author LIKE '%" + query + "%'OR serienr LIKE '%" + query + "%'");
@@ -82,6 +109,9 @@ public class DatabaseHandler {
 		}
 	}
 	
+	/* Looks for the current genres that are in the database.
+	 * returns the genrelist.
+	 */
 	public ArrayList<String>getGenres() {
 		try{
 			ArrayList<String>genres = new ArrayList<String>();
