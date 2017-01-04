@@ -25,11 +25,12 @@ public class GUI extends JFrame  {
 	private DatabaseHandler dbhandler = new DatabaseHandler();
 	private Font myFont = new Font ("Helvetica", 1, 20);
 	private ImageIcon icon = new ImageIcon("assets/Book.png");
+	private JComboBox<String> show = new JComboBox<String>();
 	
 	/*The constructor
 	 */
 	public GUI() {
-		setSize(1030, 760);
+		setSize(1280, 760);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -39,7 +40,7 @@ public class GUI extends JFrame  {
 		Image Image2 = Image.getScaledInstance(40, 40, java.awt.Image.SCALE_SMOOTH);
 		icon = new ImageIcon(Image2);
 		add_components();
-		dbhandler.sortDatabase("name");
+		dbhandler.updateList();
 		setVisible(true);
 	}
 	
@@ -53,14 +54,16 @@ public class GUI extends JFrame  {
 		TableModel.addColumn("Genre");
 		TableModel.addColumn("Author");
 		TableModel.addColumn("Serie Nr");
+		TableModel.addColumn("Rented By");
+		TableModel.addColumn("Shelf Nr");
 		
 		table = new JTable(TableModel);
 		JScrollPane scroll = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scroll.setBounds(60, 115, 650, 550);
+		scroll.setBounds(60, 115, 900, 550);
 		add(scroll);
 		
 		add_button = new JButton("Add");
-		add_button.setBounds(800, 245, 150, 70);
+		add_button.setBounds(1050, 245, 150, 70);
 		add_button.addActionListener(new ActionListener() {
 			
 			@Override
@@ -69,27 +72,35 @@ public class GUI extends JFrame  {
 				JTextField genre = new JTextField();
 				JTextField author = new JTextField();
 				JTextField serienr = new JTextField();
+				JTextField rentedby = new JTextField();
+				JTextField row = new JTextField();
 				
 				Object[] message = {
 					"Name:", name,
 					"Genre:", genre,
 					"Author:", author,
-					"Serie Nr:", serienr
+					"Serie Nr:", serienr,
+					"Rented By:", rentedby,
+					"Shelf Nr:", row
 				};
 				JOptionPane.showConfirmDialog(null, message, "Add Entry", JOptionPane.OK_CANCEL_OPTION, 0, icon);
-				if(!name.getText().equals("")) {
-				     if(dbhandler.addToDatabase(name.getText(), genre.getText(), author.getText(), serienr.getText())) {
-				    	 dbhandler.updateList();
-				     } else {
-				    	 JOptionPane.showMessageDialog(null, "Wrong Serie Nr");
-				     }
+				if(name.getText().equals("") || rentedby.getText().equals("") || row.getText().equals("")) { 
+					JOptionPane.showMessageDialog(null, "Something went wrong!");
+					return;
+				}
+			
+				if(dbhandler.addToDatabase(name.getText(), genre.getText(), author.getText(), serienr.getText(), rentedby.getText(), row.getText())) {
+					updateGenresList();
+				    dbhandler.updateList();
+				} else {
+					JOptionPane.showMessageDialog(null, "Wrong!");
 				}
 			}
 		});
 		add(add_button);
 		
 		edit_button = new JButton("Edit");
-		edit_button.setBounds(800, 370, 150, 70);
+		edit_button.setBounds(1050, 370, 150, 70);
 		edit_button.addActionListener(new ActionListener() {
 			
 			@Override
@@ -99,15 +110,20 @@ public class GUI extends JFrame  {
 					JTextField genre = new JTextField((String)TableModel.getValueAt(table.getSelectedRow(), 1));
 					JTextField author = new JTextField((String)TableModel.getValueAt(table.getSelectedRow(), 2));
 					JTextField serienr = new JTextField((String)TableModel.getValueAt(table.getSelectedRow(), 3));
+					JTextField rentedby = new JTextField((String)TableModel.getValueAt(table.getSelectedRow(), 4));
+					JTextField row = new JTextField((String)TableModel.getValueAt(table.getSelectedRow(), 5));
 					Object[] message = {
 						"Name", name,
 						"Genre", genre,
 						"Author", author,
-						"Serie Nr", serienr
+						"Serie Nr", serienr,
+						"Renters By:", rentedby,
+						"Shelf Nr:", row
 					};
 					JOptionPane.showConfirmDialog(null, message, "Edit", JOptionPane.OK_CANCEL_OPTION, 0, icon);
 					if(!name.getText().equals("")){
-						dbhandler.editFromDatabase((String)TableModel.getValueAt(table.getSelectedRow(), 0), name.getText(), genre.getText(), author.getText(), serienr.getText());
+						dbhandler.editFromDatabase((String)TableModel.getValueAt(table.getSelectedRow(), 0), name.getText(), genre.getText(), author.getText(), serienr.getText(), rentedby.getText(), row.getText());
+						updateGenresList();
 						dbhandler.updateList();
 					}
 				}
@@ -116,7 +132,7 @@ public class GUI extends JFrame  {
 		add(edit_button);
 		
 		delete_button = new JButton("Delete");
-		delete_button.setBounds(800, 495, 150, 70);
+		delete_button.setBounds(1050, 495, 150, 70);
 		delete_button.addActionListener(new ActionListener() {
 			
 			@Override
@@ -125,6 +141,7 @@ public class GUI extends JFrame  {
 					int answer = JOptionPane.showConfirmDialog(null, "Are You Sure?");
 					if(answer == 0) {
 						dbhandler.deleteFromDatabase(Integer.valueOf((String) TableModel.getValueAt(table.getSelectedRow(), 3)));
+						updateGenresList();
 						dbhandler.updateList();
 					}
 				}
@@ -132,12 +149,9 @@ public class GUI extends JFrame  {
 		});
 		add(delete_button);
 		
-		JComboBox<String> show = new JComboBox<String>();
 		show.addItem("Show All");
-		for(String a:dbhandler.getGenres()) {
-			show.addItem(a);
-		}
-		show.setBounds(460, 45, 150, 40);
+		updateGenresList();
+		show.setBounds(645, 45, 150, 40);
 		show.addActionListener(new ActionListener() {
 
 			@Override
@@ -157,7 +171,9 @@ public class GUI extends JFrame  {
 		sortby.addItem("Genre");
 		sortby.addItem("Author");
 		sortby.addItem("Serie Nr");
-		sortby.setBounds(150, 45, 150, 40);
+		sortby.addItem("Rented By");
+		sortby.addItem("Shelf Nr");
+		sortby.setBounds(205, 45, 150, 40);
 		sortby.addActionListener(new ActionListener() {
 
 			@Override
@@ -170,7 +186,7 @@ public class GUI extends JFrame  {
 		add(sortby);
 		
 		JTextField searchField = new JTextField();
-		searchField.setBounds(775, 100, 200, 30);
+		searchField.setBounds(1025, 100, 200, 30);
 		searchField.addKeyListener(new KeyListener() {
 			
 			@Override
@@ -195,17 +211,24 @@ public class GUI extends JFrame  {
 	private void addText() {
 		JLabel searchText = new JLabel("Search");
 		searchText.setFont(myFont);
-		searchText.setBounds(840, 60, 160, 30);
+		searchText.setBounds(1090, 60, 160, 30);
 		add(searchText);
 		
 		JLabel sortText = new JLabel("Sort by");
 		sortText.setFont(myFont);
-		sortText.setBounds(190, 5, 160, 30);
+		sortText.setBounds(245, 5, 160, 30);
 		add(sortText);
 		
 		JLabel showText = new JLabel("Show");
 		showText.setFont(myFont);
-		showText.setBounds(505, 5, 160, 30);
+		showText.setBounds(690, 5, 160, 30);
 		add(showText);
+	}
+	
+	private void updateGenresList() {
+		for(String a:dbhandler.getGenres()) {
+			show.removeItem(a);
+			show.addItem(a);
+		}
 	}
 }
